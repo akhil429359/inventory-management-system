@@ -37,6 +37,10 @@
             <td>
                 <a href="{% url 'update_product' product.id %}"><button>Edit</button></a>
                 <a href="{% url 'delete_product' product.id %}"><button>Delete</button></a>
+            </td><br>
+            <td>
+                <a href="{% url 'stock_in' product.id %}">Stock In</a>
+                <a href="{% url 'stock_out' product.id %}">Stock Out</a>
             </td>
         </tr>
         {% empty %}

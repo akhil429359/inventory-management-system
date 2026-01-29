@@ -10,3 +10,8 @@ class ProductForm(forms.ModelForm):
     class Meta:
         model = Product
         fields ="__all__"
+
+class StockForm(forms.ModelForm):
+    class Meta:
+        model = StockLog
+        fields = ['quantity']

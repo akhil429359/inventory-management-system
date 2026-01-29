@@ -1,6 +1,6 @@
 from django.shortcuts import render,redirect
-from .forms import CategoryForm,ProductForm
-from .models import Category,Product
+from .forms import CategoryForm,ProductForm,StockForm
+from .models import Category,Product,StockLog
 # Create your views here.
 
 def add_category(request):
@@ -48,3 +48,37 @@ def delete_product(request,id):
     product.status = 'out_of_stock'
     product.save()
     return redirect('product_list')
+
+def stock_in(request,id):
+    product = Product.objects.get(id=id)
+    if request.method == 'POST':
+        form = StockForm(request.POST)
+        if form.is_valid():
+            qty = form.cleaned_data['quantity']
+            product.quantity += qty
+            product.status = 'available'
+            product.save()
+            StockLog.objects.create(product=product,change_type='in',quantity=qty)
+            return redirect('product_list')
+    else:
+        form = StockForm()
+    return render(request,'stock_in.html',{'form':form,'product':product})
+
+def stock_out(request,id):
+    product = Product.objects.get(id=id)
+    if request.method == 'POST':
+        form = StockForm(request.POST)
+        if form.is_valid():
+            qty = form.cleaned_data['quantity']
+            if qty>product.quantity:
+                form.add_error('quantity','Not Enough Stock Available')
+            else:    
+                product.quantity -=qty
+                if product.quantity == 0:
+                    product.status = 'out_of_stock'
+                product.save()
+                StockLog.objects.create(product=product,quantity=qty,change_type='out')
+                return redirect('product_list')
+    else:
+        form = StockForm()
+    return render(request,'stock_out.html',{'form':form,'product':product})
