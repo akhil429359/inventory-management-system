@@ -7,6 +7,20 @@
 </head>
 <body>
     <h1>PRODUCT LIST</h1>
+    <form method="get">
+        <input type="text" name="q" placeholder="Search products..."
+            value="{{ query|default:'' }}">
+
+        <select name="sort" onchange="this.form.submit()">
+            <option value="">Sort By</option>
+            <option value="name" {% if sort == 'name' %}selected{% endif %}>Name</option>
+            <option value="quantity" {% if sort == 'quantity' %}selected{% endif %}>Quantity</option>
+            <option value="created" {% if sort == 'created' %}selected{% endif %}>Newest</option>
+        </select>
+
+        <button type="submit">Apply</button>
+    </form>
+
     <table border="1" cellpadding="8">
         <tr>
             <th>Name</th>
@@ -18,7 +32,7 @@
             <th>Created At</th>
         </tr>
 
-        {% for product in products %}
+        {% for product in data %}
         <tr>
             <td>{{ product.name }}</td>
             <td>{{ product.category.name }}</td>
@@ -49,6 +63,25 @@
         </tr>
         {% endfor %}
     </table>
+    {% if data.has_previous %}
+    <a href="?page={{ data.previous_page_number }}
+        {% if query %}&q={{ query }}{% endif %}
+        {% if sort %}&sort={{ sort }}{% endif %}">
+        Previous
+    </a>
+    {% endif %}
+
+    <span>
+        Page {{ data.number }} of {{ data.paginator.num_pages }}
+    </span>
+
+    {% if data.has_next %}
+        <a href="?page={{ data.next_page_number }}
+            {% if query %}&q={{ query }}{% endif %}
+            {% if sort %}&sort={{ sort }}{% endif %}">
+            Next
+        </a>
+    {% endif %}
 
 </body>
 </html>

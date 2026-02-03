@@ -1,6 +1,8 @@
 from django.shortcuts import render,redirect
 from .forms import CategoryForm,ProductForm,StockForm
 from .models import Category,Product,StockLog
+from django.core.paginator import Paginator
+from django.db.models import Q
 # Create your views here.
 
 def add_category(request):
@@ -18,8 +20,22 @@ def category_list(request):
     return render(request,'category_list.html',{'categories':categories})
 
 def product_list(request):
-    products = Product.objects.filter(is_active=True)
-    return render(request,'product_list.html',{'products':products})
+    query = request.GET.get('q')
+    sort = request.GET.get('sort')
+    SORT_OPTIONS ={
+        'name':'name',
+        'quantity':'quantity',
+        'created':'-created_at',
+    }
+    products = Product.objects.filter(is_active=True).order_by('-created_at')
+    if query:
+        products = Product.objects.filter(Q(name__icontains=query)|Q(category__name__icontains=query),is_active=True)
+    if sort in SORT_OPTIONS:
+        products = products.order_by(SORT_OPTIONS[sort])
+    paginator = Paginator(products,5)
+    page_number = request.GET.get('page')
+    data = paginator.get_page(page_number)
+    return render(request,'product_list.html',{'data':data,'query':query,'sort':sort})
 
 def add_product(request):
     if request.method == 'POST':
